@@ -44,3 +44,4 @@ compressor/mod.db0
 *~
 
 /tests/
+__pycache__/

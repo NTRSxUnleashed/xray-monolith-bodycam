@@ -91,7 +91,7 @@ float hclip(float v, float dim) { return 2.f * v / dim - 1.f; }
 
 void CRenderTarget::phase_combine()
 {
-	PIX_EVENT(phase_combine);
+	PIX_EVENT_C(phase_combine, dx10_marker_combine);
     PROF_EVENT("phase_combine");
 
 	// combine sub timers run on the main pass only so the scope pass never splits the bucket
@@ -260,7 +260,7 @@ void CRenderTarget::phase_combine()
 	tm_beg(svp_stats::SEC_C_COMBINE1);
 	if (!_menu_pp)
 	{
-		PIX_EVENT(combine_1);
+		PIX_EVENT_C(combine_1, dx10_marker_combine);
 		// Compute params
 		CEnvDescriptorMixer& envdesc = *g_pGamePersistent->Environment().CurrentEnv;
 		const float minamb = 0.001f;
@@ -416,6 +416,7 @@ void CRenderTarget::phase_combine()
 	if (RImplementation.o.ssfx_ssr && ps_r__ssfx_ssr_enable
 		&& ((svp_pass && ps_r__svp_skip_ssr < 2) || !Device.m_SecondViewport.IsSVPFrame()))
 	{
+		PIX_EVENT(phase_ssfx_ssr);
 		ssfx_PrevPos_Requiered = true;
 		tm_beg(svp_stats::SEC_C_SSR);
 		phase_ssfx_ssr(); // [SSFX] - New SSR Phase
@@ -653,6 +654,7 @@ void CRenderTarget::phase_combine()
 	{
 		if (ps_sunshafts_mode == R2SS_SCREEN_SPACE || ps_sunshafts_mode == R2SS_COMBINE_SUNSHAFTS)
 		{
+			PIX_EVENT(phase_sunshafts);
 			tm_beg(svp_stats::SEC_C_SUNSHAFT);
 			phase_sunshafts();
 			tm_end(svp_stats::SEC_C_SUNSHAFT);
@@ -661,6 +663,7 @@ void CRenderTarget::phase_combine()
 
 	if (RImplementation.o.ssfx_fog && ps_ssfx_fog_scattering > 0)
 	{
+		PIX_EVENT(phase_ssfx_fog_scattering);
 		tm_beg(svp_stats::SEC_C_FOG);
 		phase_ssfx_fog_scattering();
 		tm_end(svp_stats::SEC_C_FOG);
@@ -682,6 +685,7 @@ void CRenderTarget::phase_combine()
 	if (RImplementation.o.ssfx_motionblur && ps_ssfx_motionblur.y > 0 && !svp_dlss_skip_aa
 		&& !(svp_pass && ps_r__svp_skip_motionblur))
 	{
+		PIX_EVENT(phase_ssfx_motion_blur);
 		phase_ssfx_motion_blur();
 	}
 
@@ -701,6 +705,7 @@ void CRenderTarget::phase_combine()
 	// Off keeps the stock IsSVPFrame skip
 	if ((Device.true_pip_on && Device.m_SecondViewport.m_render_pass_is_svp) || !Device.m_SecondViewport.IsSVPFrame())
 	{
+		PIX_EVENT(phase_blur);
 		tm_beg(svp_stats::SEC_C_BLUR);
 		phase_blur();
 		tm_end(svp_stats::SEC_C_BLUR);
@@ -730,6 +735,7 @@ void CRenderTarget::phase_combine()
 	const bool svp_pass_now = Device.true_pip_on && Device.m_SecondViewport.m_render_pass_is_svp;
 	if (ps_r2_ls_flags.test(R2FLAG_DOF) && !(svp_pass_now && ps_r__svp_skip_dof))
 	{
+		PIX_EVENT(phase_dof);
 		tm_beg(svp_stats::SEC_C_DOF);
 		phase_dof();
 		tm_end(svp_stats::SEC_C_DOF);
@@ -742,6 +748,7 @@ void CRenderTarget::phase_combine()
 		svp_stats_lean_flags |= svp_stats::LEAN_LUT;
 	if (!lut_stock_skip && !lean_lut)
 	{
+		PIX_EVENT(phase_lut);
 		tm_beg(svp_stats::SEC_C_LUT);
 		phase_lut();
 		tm_end(svp_stats::SEC_C_LUT);
@@ -835,8 +842,8 @@ void CRenderTarget::phase_combine()
 	tm_beg(svp_stats::SEC_C_COMBINE2);
 	if (1)
 	{
-		PIX_EVENT(combine_2);
-		//
+		PIX_EVENT_C(combine_2, dx10_marker_combine);
+		// 
 		struct v_aa
 		{
 			Fvector4 p;
@@ -962,7 +969,7 @@ void CRenderTarget::phase_combine()
 	// pip the svp pass skips phase_pp, it writes the real backbuffer
 	if (PP_Complex && !(Device.true_pip_on && Device.m_SecondViewport.m_render_pass_is_svp))
 	{
-		PIX_EVENT(phase_pp);
+		PIX_EVENT_C(phase_pp, dx10_marker_post);
 		tm_beg(svp_stats::SEC_C_COMBINE2);
 		phase_pp();
 		tm_end(svp_stats::SEC_C_COMBINE2);
