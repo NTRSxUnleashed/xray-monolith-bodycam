@@ -425,8 +425,6 @@ protected:
 
 	xr_vector<Fvector2> m_hit_clip_poly;
 
-	xr_vector<Fvector2> m_hit_clip_poly;
-
 #ifdef DEBUG
 	int m_dbg_id;
 #endif
